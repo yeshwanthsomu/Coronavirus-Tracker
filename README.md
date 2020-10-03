@@ -12,3 +12,4 @@ Please visit the website for looking at the visualization!
 
 https://rpubs.com/yeshwanth88/Coronavirus-Tracker
 
+![site_pic](https://github.com/yeshwanthsomu/Coronavirus-Tracker/blob/main/RPubs2.png)
