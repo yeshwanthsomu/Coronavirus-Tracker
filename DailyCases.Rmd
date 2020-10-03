@@ -280,7 +280,7 @@ plot_ly(confirmed_US_Subset, x=~Date, y=~InfectionChance, type = "scatter", mode
 ```
 
 
-# Daily Confirmed Cases in States {.tabset .tabset-fade}
+# Daily Confirmed Cases and Chance of Infection in States {.tabset .tabset-fade}
 
 Row
 -------------------------------------
@@ -291,52 +291,18 @@ daily("Virginia")
 
 ```
 
-### Washington DC
-```{r, message=F, echo=FALSE, warning=FALSE}
-daily("District of Columbia")
-
-```
-
-Row
--------------------------------------
-
-### California
-```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
-daily("California")
-
-```
-
-### Texas
-```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
-daily("Texas")
-
-```
-
-
-Row
--------------------------------------
-
-### Florida
-```{r, message=F, echo=FALSE, warning=FALSE}
-daily("Florida")
-
-```
-
-### Georgia
-```{r, message=F, echo=FALSE, warning=FALSE}
-daily("Georgia")
-
-```
-
-
-# Chance of Infection in States {.tabset .tabset-fade}
-
-Row
--------------------------------------
-
 ### Virginia
 ```{r, message=F, echo=FALSE, warning=FALSE}
 chance("Virginia")
+
+```
+
+Row
+-------------------------------------
+
+### Washington DC
+```{r, message=F, echo=FALSE, warning=FALSE}
+daily("District of Columbia")
 
 ```
 
@@ -351,9 +317,25 @@ Row
 
 ### California
 ```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
+daily("California")
+
+```
+
+### California
+```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
 chance("California")
 
 ```
+
+Row
+-------------------------------------
+
+### Texas
+```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
+daily("Texas")
+
+```
+
 
 ### Texas
 ```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
@@ -361,13 +343,27 @@ chance("Texas")
 
 ```
 
-
 Row
 -------------------------------------
 
 ### Florida
 ```{r, message=F, echo=FALSE, warning=FALSE}
+daily("Florida")
+
+```
+
+### Florida
+```{r, message=F, echo=FALSE, warning=FALSE}
 chance("Florida")
+
+```
+
+Row
+-------------------------------------
+
+### Georgia
+```{r, message=F, echo=FALSE, warning=FALSE}
+daily("Georgia")
 
 ```
 
@@ -376,8 +372,6 @@ chance("Florida")
 chance("Georgia")
 
 ```
-
-
  
 
 
