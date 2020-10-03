@@ -300,15 +300,15 @@ daily("District of Columbia")
 Row
 -------------------------------------
 
-### Florida
-```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
-daily("Florida")
-
-```
-
 ### California
 ```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
 daily("California")
+
+```
+
+### Texas
+```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
+daily("Texas")
 
 ```
 
@@ -316,15 +316,15 @@ daily("California")
 Row
 -------------------------------------
 
-### Texas
+### Florida
 ```{r, message=F, echo=FALSE, warning=FALSE}
-daily("Texas")
+daily("Florida")
 
 ```
 
-### North Carolina
+### Georgia
 ```{r, message=F, echo=FALSE, warning=FALSE}
-daily("North Carolina")
+daily("Georgia")
 
 ```
 
@@ -349,15 +349,15 @@ chance("District of Columbia")
 Row
 -------------------------------------
 
-### Florida
-```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
-chance("Florida")
-
-```
-
 ### California
 ```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
 chance("California")
+
+```
+
+### Texas
+```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
+chance("Texas")
 
 ```
 
@@ -365,15 +365,15 @@ chance("California")
 Row
 -------------------------------------
 
-### Texas
+### Florida
 ```{r, message=F, echo=FALSE, warning=FALSE}
-chance("Texas")
+chance("Florida")
 
 ```
 
-### North Carolina
+### Georgia
 ```{r, message=F, echo=FALSE, warning=FALSE}
-chance("North Carolina")
+chance("Georgia")
 
 ```
 

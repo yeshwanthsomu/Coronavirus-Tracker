@@ -3,3 +3,7 @@
 Welcome to the Coronavirus Tracker. 
 
 This R Code will show you three components, Daily Confirmed Cases in Top Countries, Daily Confirmed Cases in States, and Chance of Infection in States.
+
+The DailyCases.Rmd file shows the source code for all the analysis/cleaning and coding done for the visualization. 
+
+The DailyCases.htm is the webpage where the visualization lives, but will only open the source code for the website.
