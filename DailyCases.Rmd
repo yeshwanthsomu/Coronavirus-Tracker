@@ -36,9 +36,9 @@ death_world <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-
 recovered_world <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv",
                             stringsAsFactors = FALSE, check.names =  FALSE)
 
-confirmed_world <- confirmed_world[,-c(5:(ncol(confirmed_world)-120))]
+confirmed_world <- confirmed_world[,-c(5:(ncol(confirmed_world)-150))]
 death_world <- death_world[,-c(5:(ncol(death_world)-120))]
-recovered_world <- recovered_world[,-c(5:(ncol(recovered_world)-120))]
+recovered_world <- recovered_world[,-c(5:(ncol(recovered_world)-150))]
 
 confirmed_world <- melt(confirmed_world, id.vars = c("Province/State", "Country/Region", "Lat", "Long"),
                         variable.name = "Date", value.name = "Confirmed")
@@ -89,8 +89,10 @@ recentdate <- major.summary.data$Date[nrow(major.summary.data)]
 recentdate_countries <- major.summary.data[(major.summary.data$Date == recentdate),]
 topcountries <- as.character(recentdate_countries[order(-recentdate_countries$Confirmed),1])
 
+######################################################################################
+# FUNCTION FOR LOOKING AT DAILY NEW CASES OF A COUNTRY
+######################################################################################
 
-## Plotting only ONE country's data
 countries <- function(Country = ct){
 
 country <- Country
@@ -108,6 +110,8 @@ a <- list(
   showarrow=FALSE
 )
 
+# Daily New Confirmed Cases plot
+#############################################
 plot_ly(major.summary.data_countries,
          x=~Date, y=~Diff, type = "bar") %>% 
    layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Cases")) %>% 
@@ -118,7 +122,7 @@ plot_ly(major.summary.data_countries,
 
 ```
 
-# Daily Confirmed Cases in Top Countries {.tabset .tabset-fade}
+# Coronavirus in Top Countries {.tabset .tabset-fade}
 
 Row
 -------------------------------------
@@ -126,13 +130,11 @@ Row
 ### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
 countries(topcountries[1])
-
 ```
 
 ### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
 countries(topcountries[2])
-
 ```
 
 Row
@@ -141,13 +143,11 @@ Row
 ### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
 countries(topcountries[3])
-
 ```
 
 ###
 ```{r, message=F, echo=FALSE, warning=FALSE}
 countries(topcountries[4])
-
 ```
 
 Row
@@ -156,18 +156,12 @@ Row
 ### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
 countries(topcountries[5])
-
 ```
 
 ###
 ```{r, message=F, echo=FALSE, warning=FALSE}
 countries(topcountries[6])
-
 ```
-
-
-
-
 
 
 
@@ -199,13 +193,15 @@ death_US <- death_US[,c(-1,-2,-3,-4,-5,-6,-8,-9,-10,-11,-12)]
 
 ## look at which dates you want to look at
 ## this removes all the dates prior to the date you want to start at
-confirmed_US <- confirmed_US[,-c(2:(ncol(confirmed_US)-180))]
-death_US <- death_US[,-c(2:(ncol(death_US)-180))]
+confirmed_US <- confirmed_US[,-c(2:(ncol(confirmed_US)-150))]
+death_US <- death_US[,-c(2:(ncol(death_US)-150))]
 
 library(plyr)
 confirmed_US <- aggregate(. ~ Province_State, data=confirmed_US, FUN=sum)
 death_US <- aggregate(. ~ Province_State, data=death_US, FUN=sum)
 
+#########################################################################################################
+# INCLUDING POPULATION NUMBERS FOR EACH STATE
 #########################################################################################################
 
 confirmed_US <- confirmed_US[!(confirmed_US$Province_State=="Grand Princess" | confirmed_US$Province_State=="Diamond Princess"),]
@@ -227,7 +223,9 @@ populations <- populations[order(populations$State),]; row.names(populations) <-
 
 confirmed_US <- add_column(confirmed_US, Population=populations$Population, .after=1)
 
-#########################################################################################################
+######################################################################################
+# FUNCTION FOR LOOKING AT DAILY NEW CASES
+######################################################################################
 
 daily <- function(State = st){
 state <- State
@@ -240,6 +238,8 @@ confirmed_US_Subset$Diff[1] <- 0
 
 confirmed_US_Subset$Date <- as.Date(as.character(confirmed_US_Subset$Date), format = c("%m/%d/%y"))
 
+# Daily New Confirmed Cases plot
+#############################################
 plot_ly(confirmed_US_Subset,
          x=~Date, y=~Diff, type = "bar") %>%
    layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Cases")) %>%
@@ -248,7 +248,9 @@ plot_ly(confirmed_US_Subset,
   config(displayModeBar = F)
 }
 
-######################################################################################33
+######################################################################################
+# FUNCTION FOR LOOKING AT INFECTION RATES AND ACTIVE CASES
+######################################################################################
 
 chance <- function(State = st){
 state <- State
@@ -266,21 +268,30 @@ confirmed_US_Subset$Diff[1] <- 0
 confirmed_US_Subset$Date <- as.Date(as.character(confirmed_US_Subset$Date), format = c("%m/%d/%y"))
 confirmed_US_Subset$Recovered <- ceiling(confirmed_US_Subset$Confirmed*(0.624594469))
 confirmed_US_Subset$Death <- death_US_Subset$Death
-confirmed_US_Subset$Active <- confirmed_US_Subset$Confirmed-confirmed_US_Subset$Recovered-confirmed_US_Subset$Death
+confirmed_US_Subset$Active <-confirmed_US_Subset$Confirmed-confirmed_US_Subset$Recovered-confirmed_US_Subset$Death
+confirmed_US_Subset$ActiveDiff[2:nrow(confirmed_US_Subset)] <- diff(confirmed_US_Subset$Active)
+confirmed_US_Subset$ActiveDiff[1] <- 0
 
 confirmed_US_Subset$InfectionChance <- (confirmed_US_Subset$Active/(confirmed_US_Subset$Population-confirmed_US_Subset$Confirmed))*100
 
-plot_ly(confirmed_US_Subset, x=~Date, y=~InfectionChance, type = "scatter", mode = "lines") %>%
-   layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Chance of Infection(%)")) %>%
-   layout(title = list(text = paste("Daily Chances of Infection for", state, sep=" "))) %>%
-   layout(yaxis = list(range = c(0, 5))) %>%
+# Total Active Cases & Infection Rate plots
+##################################################
+plot_ly(confirmed_US_Subset, x =~Date, y =~Active, type = "scatter", mode = "lines") %>%
+  add_trace(x =~confirmed_US_Subset$Date, y =~confirmed_US_Subset$InfectionChance, type = "scatter",
+            mode="lines", yaxis = "y2") %>%
+  layout(title = paste("Total Active Cases and Chances of Infection for", state, sep=" "),
+         yaxis= list(title="Cases"),
+         yaxis2 = list(overlaying = "y", side = "right", range=c(0,5), title="Chance of Infection(%)",
+                       tickfont = list(color = "red")),
+         showlegend = FALSE) %>%
   config(displayModeBar = F)
+
 }
 
 ```
 
 
-# Daily Confirmed Cases and Chance of Infection in States {.tabset .tabset-fade}
+# Coronavirus in US States {.tabset .tabset-fade}
 
 Row
 -------------------------------------
@@ -288,13 +299,11 @@ Row
 ### Virginia
 ```{r, message=F, echo=FALSE, warning=FALSE}
 daily("Virginia")
-
 ```
 
 ### Virginia
 ```{r, message=F, echo=FALSE, warning=FALSE}
 chance("Virginia")
-
 ```
 
 Row
@@ -303,13 +312,11 @@ Row
 ### Washington DC
 ```{r, message=F, echo=FALSE, warning=FALSE}
 daily("District of Columbia")
-
 ```
 
 ### Washington DC
 ```{r, message=F, echo=FALSE, warning=FALSE}
 chance("District of Columbia")
-
 ```
 
 Row
@@ -318,13 +325,11 @@ Row
 ### California
 ```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
 daily("California")
-
 ```
 
 ### California
 ```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
 chance("California")
-
 ```
 
 Row
@@ -333,14 +338,12 @@ Row
 ### Texas
 ```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
 daily("Texas")
-
 ```
 
 
 ### Texas
 ```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
 chance("Texas")
-
 ```
 
 Row
@@ -349,13 +352,11 @@ Row
 ### Florida
 ```{r, message=F, echo=FALSE, warning=FALSE}
 daily("Florida")
-
 ```
 
 ### Florida
 ```{r, message=F, echo=FALSE, warning=FALSE}
 chance("Florida")
-
 ```
 
 Row
@@ -364,13 +365,11 @@ Row
 ### Georgia
 ```{r, message=F, echo=FALSE, warning=FALSE}
 daily("Georgia")
-
 ```
 
 ### Georgia
 ```{r, message=F, echo=FALSE, warning=FALSE}
 chance("Georgia")
-
 ```
  
 
