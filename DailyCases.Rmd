@@ -1,0 +1,397 @@
+---
+title: "How Bad is COVID Now?"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+    source_code: embed
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(plotly)
+```
+
+
+```{r, message=F, echo=F, warning=FALSE}
+library(RColorBrewer)
+library(reshape2)
+library(tidyverse)
+library(tidyquant)
+library(ggplot2)
+library(plotly)
+library(riingo)
+library(quantmod)
+require("quantmod")
+library(writexl)
+library(scales)
+library(plotly)
+library(plyr)
+
+confirmed_world <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv",
+                            stringsAsFactors = FALSE, check.names =  FALSE)
+death_world <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv",
+                        stringsAsFactors = FALSE, check.names =  FALSE)
+recovered_world <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv",
+                            stringsAsFactors = FALSE, check.names =  FALSE)
+
+confirmed_world <- confirmed_world[,-c(5:(ncol(confirmed_world)-120))]
+death_world <- death_world[,-c(5:(ncol(death_world)-120))]
+recovered_world <- recovered_world[,-c(5:(ncol(recovered_world)-120))]
+
+confirmed_world <- melt(confirmed_world, id.vars = c("Province/State", "Country/Region", "Lat", "Long"),
+                        variable.name = "Date", value.name = "Confirmed")
+death_world <- melt(death_world, id.vars = c("Province/State", "Country/Region", "Lat", "Long"),
+                    variable.name = "Date", value.name = "Death")
+recovered_world <- melt(recovered_world, id.vars = c("Province/State", "Country/Region", "Lat", "Long"),
+                        variable.name = "Date", value.name = "Recovered")
+
+combined <- sort(union(levels(confirmed_world$Date), levels(death_world$Date)))
+combined <- sort(union(combined, levels(recovered_world$Date)))
+
+confirmed_world <- mutate(confirmed_world, Date= factor(Date, levels= combined))
+death_world <- mutate(death_world, Date= factor(Date, levels= combined))
+recovered_world <- mutate(recovered_world, Date= factor(Date, levels= combined))
+
+world_history_data <- left_join(confirmed_world, death_world,
+                                by= c("Province/State", "Country/Region", "Lat", "Long", "Date"))
+world_history_data <- left_join(world_history_data, recovered_world,
+                                by= c("Province/State", "Country/Region", "Lat", "Long", "Date"))
+
+world_history_data$Date <- as.Date(as.character(world_history_data$Date), format = c("%m/%d/%y"))
+colnames(world_history_data) <- make.names(colnames(world_history_data))
+
+coronavirus <- world_history_data
+lastday <- max(coronavirus$Date)
+
+cols <- matrix(c(brewer.pal(9,"Set1"),brewer.pal(11,"Set3")),ncol=1)
+world.summary.data <- ddply(world_history_data,.(Country.Region, Date),function(x){
+    colSums(x[,c("Confirmed","Death","Recovered")])
+})
+
+world.summary.data <- world.summary.data[world.summary.data$Date<=lastday,]
+yesterday.data <- world.summary.data[world.summary.data$Date==lastday,]
+sort.index <- sort(yesterday.data$Confirmed,decreasing=TRUE,index.return=TRUE)$ix
+yesterday.data.major  <- yesterday.data[sort.index[1:20],]
+yesterday.data.major  <- data.frame(Country.Region=yesterday.data$Country.Region[sort.index[1:20]])
+yesterday.data.major$Country.Region  <- as.character(yesterday.data.major$Country.Region )
+major.summary.data <- dplyr::inner_join(world.summary.data,yesterday.data.major,by = "Country.Region")
+
+
+rownames(cols) <- unique(major.summary.data$Country.Region)
+
+major.summary.data$Country.Region <- factor(major.summary.data$Country.Region,
+    levels = rev(yesterday.data.major$Country.Region))
+
+attach(major.summary.data)
+recentdate <- major.summary.data$Date[nrow(major.summary.data)]
+recentdate_countries <- major.summary.data[(major.summary.data$Date == recentdate),]
+topcountries <- as.character(recentdate_countries[order(-recentdate_countries$Confirmed),1])
+
+
+## Plotting only ONE country's data
+countries <- function(Country = ct){
+
+country <- Country
+
+major.summary.data_countries <- subset(major.summary.data, subset = Country.Region %in% country)
+major.summary.data_countries$Diff[2:nrow(major.summary.data_countries)] <- diff(major.summary.data_countries$Confirmed)
+major.summary.data_countries$Diff[1] <- 0
+
+a <- list(
+  x = major.summary.data_countries$Date[1],
+  y = max(major.summary.data_countries$Diff),
+  text = major.summary.data_countries[(major.summary.data_countries$Date == recentdate),"Confirmed"],
+  xref = "x",
+  yref = "y",
+  showarrow=FALSE
+)
+
+plot_ly(major.summary.data_countries,
+         x=~Date, y=~Diff, type = "bar") %>% 
+   layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Cases")) %>% 
+   layout(title = list(text = paste("Daily New Confirmed Cases for", country, sep=" "))) %>%
+   layout(yaxis = list(range = c(0, 1.1*(max(major.summary.data_countries$Diff)))))%>%
+  config(displayModeBar = F) 
+}
+
+```
+
+# Daily Confirmed Cases in Top Countries {.tabset .tabset-fade}
+
+Row
+-------------------------------------
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[1])
+
+```
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[2])
+
+```
+
+Row
+-------------------------------------
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[3])
+
+```
+
+###
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[4])
+
+```
+
+Row
+-------------------------------------
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[5])
+
+```
+
+###
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[6])
+
+```
+
+
+
+
+
+
+
+```{r, message=F, echo=FALSE, warning=FALSE}
+library(RColorBrewer)
+library(reshape2)
+library(tidyverse)
+library(tidyquant)
+library(ggplot2)
+library(plotly)
+library(riingo)
+library(quantmod)
+require("quantmod")
+library(writexl)
+library(scales)
+library(plotly)
+library(plyr)
+library(htmltab)
+library(tibble)
+library(taRifx)
+
+
+confirmed_US <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv",
+                         stringsAsFactors = FALSE, check.names =  FALSE)
+confirmed_US <- confirmed_US[,c(-1,-2,-3,-4,-5,-6,-8,-9,-10,-11)]
+death_US <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv",
+                        stringsAsFactors = FALSE, check.names =  FALSE)
+death_US <- death_US[,c(-1,-2,-3,-4,-5,-6,-8,-9,-10,-11,-12)]
+
+## look at which dates you want to look at
+## this removes all the dates prior to the date you want to start at
+confirmed_US <- confirmed_US[,-c(2:(ncol(confirmed_US)-180))]
+death_US <- death_US[,-c(2:(ncol(death_US)-180))]
+
+library(plyr)
+confirmed_US <- aggregate(. ~ Province_State, data=confirmed_US, FUN=sum)
+death_US <- aggregate(. ~ Province_State, data=death_US, FUN=sum)
+
+#########################################################################################################
+
+confirmed_US <- confirmed_US[!(confirmed_US$Province_State=="Grand Princess" | confirmed_US$Province_State=="Diamond Princess"),]
+death_US <- death_US[!(death_US$Province_State=="Grand Princess" | death_US$Province_State=="Diamond Princess"),]
+
+
+populations <- data.frame(htmltab("https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population", 1)[,c(3,4)], stringsAsFactors=F)
+populations <- populations[!(populations$State=="Contiguous United States" |
+                             populations$State=="The fifty states" |
+                             populations$State=="Fifty states + D.C." |
+                             populations$State=="Total U.S. (including D.C. and territories)"),]
+colnames(populations) <- c("State", "Population")
+populations[54,1] <- "Virgin Islands"
+populations$Population <- destring(populations$Population)
+
+
+confirmed_US <- confirmed_US[order(confirmed_US$Province_State),]
+populations <- populations[order(populations$State),]; row.names(populations) <- 1:nrow(populations)
+
+confirmed_US <- add_column(confirmed_US, Population=populations$Population, .after=1)
+
+#########################################################################################################
+
+daily <- function(State = st){
+state <- State
+
+confirmed_US_Subset <- subset(confirmed_US, Province_State == state)
+confirmed_US_Subset <- melt(confirmed_US_Subset, id.vars = c("Province_State","Population"),
+                            variable.name = "Date", value.name = "Confirmed")
+confirmed_US_Subset$Diff[2:nrow(confirmed_US_Subset)] <- diff(confirmed_US_Subset$Confirmed)
+confirmed_US_Subset$Diff[1] <- 0
+
+confirmed_US_Subset$Date <- as.Date(as.character(confirmed_US_Subset$Date), format = c("%m/%d/%y"))
+
+plot_ly(confirmed_US_Subset,
+         x=~Date, y=~Diff, type = "bar") %>%
+   layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Cases")) %>%
+   layout(title = list(text = paste("Daily New Confirmed Cases for", state, sep=" "))) %>%
+   layout(yaxis = list(range = c(0, 1.1*(max(confirmed_US_Subset$Diff))))) %>%
+  config(displayModeBar = F)
+}
+
+######################################################################################33
+
+chance <- function(State = st){
+state <- State
+
+confirmed_US_Subset <- subset(confirmed_US, Province_State == state)
+confirmed_US_Subset <- melt(confirmed_US_Subset, id.vars = c("Province_State","Population"),
+                            variable.name = "Date", value.name = "Confirmed")
+death_US_Subset <- subset(death_US, Province_State == state)
+death_US_Subset <- melt(death_US_Subset, id.vars = c("Province_State"),
+                            variable.name = "Date", value.name = "Death")
+
+confirmed_US_Subset$Diff[2:nrow(confirmed_US_Subset)] <- diff(confirmed_US_Subset$Confirmed)
+confirmed_US_Subset$Diff[1] <- 0
+
+confirmed_US_Subset$Date <- as.Date(as.character(confirmed_US_Subset$Date), format = c("%m/%d/%y"))
+confirmed_US_Subset$Recovered <- ceiling(confirmed_US_Subset$Confirmed*(0.624594469))
+confirmed_US_Subset$Death <- death_US_Subset$Death
+confirmed_US_Subset$Active <- confirmed_US_Subset$Confirmed-confirmed_US_Subset$Recovered-confirmed_US_Subset$Death
+
+confirmed_US_Subset$InfectionChance <- (confirmed_US_Subset$Active/(confirmed_US_Subset$Population-confirmed_US_Subset$Confirmed))*100
+
+plot_ly(confirmed_US_Subset, x=~Date, y=~InfectionChance, type = "scatter", mode = "lines") %>%
+   layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Chance of Infection(%)")) %>%
+   layout(title = list(text = paste("Daily Chances of Infection for", state, sep=" "))) %>%
+   layout(yaxis = list(range = c(0, 5))) %>%
+  config(displayModeBar = F)
+}
+
+```
+
+
+# Daily Confirmed Cases in States {.tabset .tabset-fade}
+
+Row
+-------------------------------------
+
+### Virginia
+```{r, message=F, echo=FALSE, warning=FALSE}
+daily("Virginia")
+
+```
+
+### Washington DC
+```{r, message=F, echo=FALSE, warning=FALSE}
+daily("District of Columbia")
+
+```
+
+Row
+-------------------------------------
+
+### Florida
+```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
+daily("Florida")
+
+```
+
+### California
+```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
+daily("California")
+
+```
+
+
+Row
+-------------------------------------
+
+### Texas
+```{r, message=F, echo=FALSE, warning=FALSE}
+daily("Texas")
+
+```
+
+### North Carolina
+```{r, message=F, echo=FALSE, warning=FALSE}
+daily("North Carolina")
+
+```
+
+
+# Chance of Infection in States {.tabset .tabset-fade}
+
+Row
+-------------------------------------
+
+### Virginia
+```{r, message=F, echo=FALSE, warning=FALSE}
+chance("Virginia")
+
+```
+
+### Washington DC
+```{r, message=F, echo=FALSE, warning=FALSE}
+chance("District of Columbia")
+
+```
+
+Row
+-------------------------------------
+
+### Florida
+```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
+chance("Florida")
+
+```
+
+### California
+```{r, message=F, echo=FALSE, warning=FALSE, out.width="100%", fig.align="center"}
+chance("California")
+
+```
+
+
+Row
+-------------------------------------
+
+### Texas
+```{r, message=F, echo=FALSE, warning=FALSE}
+chance("Texas")
+
+```
+
+### North Carolina
+```{r, message=F, echo=FALSE, warning=FALSE}
+chance("North Carolina")
+
+```
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
