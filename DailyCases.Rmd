@@ -183,7 +183,6 @@ library(htmltab)
 library(tibble)
 library(taRifx)
 library(readxl)
-setwd("~/Desktop/Random Stuff/Daily Cases_2/Coronavirus-Tracker")
 
 confirmed_US <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv",
                          stringsAsFactors = FALSE, check.names =  FALSE)
@@ -209,25 +208,34 @@ confirmed_US <- confirmed_US[!(confirmed_US$Province_State=="Grand Princess" | c
 death_US <- death_US[!(death_US$Province_State=="Grand Princess" | death_US$Province_State=="Diamond Princess"),]
 
 ## REPLACE THIS WITH THE EXCEL FILE
-worldmeter <- read_xlsx("WorldmeterUS.xlsx")
-worldmeter$RecoveredRatio[3] <- 0.624594469
-worldmeter$RecoveredRatio[43] <- 0.624594469
+library(rvest)
 
-# populations <- data.frame(htmltab("https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population", 1)[,c(3,4)], stringsAsFactors=F)
-# populations <- populations[!(populations$State=="Contiguous United States" |
-#                              populations$State=="The fifty states" |
-#                              populations$State=="Fifty states + D.C." |
-#                              populations$State=="Total U.S. (including D.C. and territories)"),]
-# colnames(populations) <- c("State", "Population")
-# populations[54,1] <- "Virgin Islands"
-# populations$Population <- destring(populations$Population)
+worldmeter <- data.frame(html_table(read_html("https://www.worldometers.info/coronavirus/country/us/"),
+           fill=TRUE)[[1]])
+
+worldmeter <- worldmeter[-c(1,57:64),c(2,3,5,7,13)]
+
+worldmeter[(worldmeter$USAState=="Guam"),5] <- 165768 #Guam Population
+worldmeter[(worldmeter$USAState=="United States Virgin Islands"),5] <- 106977 #Virgin Islands Population
+worldmeter[(worldmeter$USAState=="United States Virgin Islands"),1] <- "Virgin Islands" #Virgin Islands Name replacement
+worldmeter[(worldmeter$USAState=="Northern Mariana Islands"),5] <- 56882 #Mariana Islands Population
+worldmeter[nrow(worldmeter)+1,]=c("American Samoa", 0, 0, 0, 55465, 0) ## Adding American Samoa population and values
+
+#Converting characters to numerics 
+worldmeter$TotalCases <- as.numeric(gsub('![[:alnum:]]*[[:space:]]|[[:punct:]]', '', worldmeter$TotalCases))
+worldmeter$TotalDeaths <- as.numeric(gsub('![[:alnum:]]*[[:space:]]|[[:punct:]]', '', worldmeter$TotalDeaths))
+worldmeter$TotalRecovered <- as.numeric(gsub('![[:alnum:]]*[[:space:]]|[[:punct:]]', '', worldmeter$TotalRecovered))
+worldmeter$Population <- as.numeric(gsub('![[:alnum:]]*[[:space:]]|[[:punct:]]', '', worldmeter$Population))
+worldmeter$RecoveredRatio <- worldmeter$TotalRecovered/worldmeter$TotalCases
+worldmeter[is.na(worldmeter)] <- 0
 
 
 confirmed_US <- confirmed_US[order(confirmed_US$Province_State),]
-worldmeter <- worldmeter[order(worldmeter$State),]
+worldmeter <- worldmeter[order(worldmeter$USAState),]
 
 confirmed_US <- add_column(confirmed_US, Population=worldmeter$Population, .after=1)
 confirmed_US <- add_column(confirmed_US, RecoveredRatio=worldmeter$RecoveredRatio, .after=1)
+#confirmed_US$RecoveredRatio <- as.numeric(gsub('![[:alnum:]]*[[:space:]]|[[:punct:]]', '', confirmed_US$RecoveredRatio))
 
 ######################################################################################
 # FUNCTION FOR LOOKING AT DAILY NEW CASES
