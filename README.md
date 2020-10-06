@@ -1,6 +1,6 @@
 # Coronavirus-Tracker
 
-Welcome to the Coronavirus Tracker. 
+Welcome to a Coronavirus Tracker. 
 
 This R Code will show you three components, Coronavirus in Top Countries, and Coronavirus in US States.
 
