@@ -280,12 +280,12 @@ daily <- function(State = st, scope = Scope){
     
       # Total Active Cases & Infection Rate plots
       ##################################################
-      plot_ly(confirmed_US_Subset, x =~Date, y =~Active, type = "scatter", mode = "lines") %>%
+      plot_ly(confirmed_US_Subset, x =~Date, y =~Active, type = "scatter", mode = "lines", name = "Cases") %>%
         add_trace(x =~confirmed_US_Subset$Date, y =~confirmed_US_Subset$InfectionChance, type = "scatter",
-                  mode="lines", yaxis = "y2") %>%
-        layout(title = paste("Total Active Cases and Chances of Infection for", state, sep=" "),
+                  mode="lines", yaxis = "y2", name = "Infection Chance(%)") %>%
+        layout(title = paste("Total Active Cases and Chances of Infection(%) for", state, sep=" "),
                yaxis= list(title="Cases"),
-               yaxis2 = list(overlaying = "y", side = "right", range=c(0,5), title="Chance of Infection(%)",
+               yaxis2 = list(overlaying = "y", side = "right", range=c(0,5), title="",
                              tickfont = list(color = "red")),
                showlegend = FALSE) %>%
         config(displayModeBar = F)
