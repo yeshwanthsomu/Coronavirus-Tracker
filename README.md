@@ -2,7 +2,7 @@
 
 Welcome to a Coronavirus Tracker. 
 
-This R Code will show you three components, Coronavirus in Top Countries, and Coronavirus in US States.
+This R Code will show you two components, Coronavirus in Top Countries, and Coronavirus in US States.
 
 The DailyCases.Rmd file shows the source code for all the analysis/cleaning and coding done for the visualization. 
 
