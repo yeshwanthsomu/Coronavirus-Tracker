@@ -235,7 +235,7 @@ worldmeter <- worldmeter[order(worldmeter$USAState),]
 
 confirmed_US <- add_column(confirmed_US, Population=worldmeter$Population, .after=1)
 confirmed_US <- add_column(confirmed_US, RecoveredRatio=worldmeter$RecoveredRatio, .after=1)
-#confirmed_US$RecoveredRatio <- as.numeric(gsub('![[:alnum:]]*[[:space:]]|[[:punct:]]', '', confirmed_US$RecoveredRatio))
+
 
 ######################################################################################
 # FUNCTION FOR LOOKING AT DAILY NEW CASES
