@@ -234,6 +234,7 @@ daily <- function(State = st, scope = Scope){
              yaxis2 = list(overlaying = "y", side = "right", range=c(0,5), title="",
                            tickfont = list(color = "red")),
              showlegend = FALSE) %>%
+      layout(yaxis = list(range = c(0, 1.1*(max(confirmed_US_Subset$Active))))) %>%
       config(displayModeBar = F)
   }
 }
