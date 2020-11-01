@@ -113,11 +113,12 @@ a <- list(
 # Daily New Confirmed Cases plot
 #############################################
 plot_ly(major.summary.data_countries,
-         x=~Date, y=~Diff, type = "bar") %>% 
-   layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Cases")) %>% 
+         x=~Date, y=~Diff, type = "bar") %>%
+   layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Cases")) %>%
    layout(title = list(text = paste("Daily New Confirmed Cases for", country, sep=" "))) %>%
    layout(yaxis = list(range = c(0, 1.1*(max(major.summary.data_countries$Diff)))))%>%
-  config(displayModeBar = F) 
+  config(displayModeBar = F)
+
 }
 
 ```
@@ -374,6 +375,19 @@ daily(State = "Georgia", scope= "Daily")
 ### Georgia
 ```{r, message=F, echo=FALSE, warning=FALSE}
 daily(State = "Georgia", scope= "Active")
+```
+
+Row
+-------------------------------------
+
+### New York
+```{r, message=F, echo=FALSE, warning=FALSE}
+daily(State = "New York", scope= "Daily")
+```
+
+### New York
+```{r, message=F, echo=FALSE, warning=FALSE}
+daily(State = "New York", scope= "Active")
 ```
  
 
