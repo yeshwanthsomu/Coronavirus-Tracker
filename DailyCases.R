@@ -29,9 +29,9 @@ death_world <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-
 recovered_world <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv",
                             stringsAsFactors = FALSE, check.names =  FALSE)
 
-confirmed_world <- confirmed_world[,-c(5:(ncol(confirmed_world)-150))]
-death_world <- death_world[,-c(5:(ncol(death_world)-120))]
-recovered_world <- recovered_world[,-c(5:(ncol(recovered_world)-150))]
+confirmed_world <- confirmed_world[,-c(5:48)]
+death_world <- death_world[,-c(5:48)]
+recovered_world <- recovered_world[,-c(5:48)]
 
 confirmed_world <- melt(confirmed_world, id.vars = c("Province/State", "Country/Region", "Lat", "Long"),
                         variable.name = "Date", value.name = "Confirmed")
@@ -138,9 +138,10 @@ death_US <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/
 death_US <- death_US[,c(-1,-2,-3,-4,-5,-6,-8,-9,-10,-11,-12)]
 
 ## look at which dates you want to look at
-## this removes all the dates prior to the date you want to start at
-confirmed_US <- confirmed_US[,-c(2:(ncol(confirmed_US)-150))]
-death_US <- death_US[,-c(2:(ncol(death_US)-150))]
+## this removes all the dates from January to March since there weren't too many cases then
+confirmed_US <- confirmed_US[,-c(5:48)]
+death_US <- death_US[,-c(5:48)]
+
 
 library(plyr)
 confirmed_US <- aggregate(. ~ Province_State, data=confirmed_US, FUN=sum)
