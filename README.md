@@ -8,6 +8,6 @@ The DailyCases.Rmd file shows the source code for all the analysis/cleaning and 
 
 Please visit the website for the full visualization! 
 
-https://rpubs.com/yeshwanth88/669991
+![Coronavirus Tracker](https://rpubs.com/yeshwanth88/Coronavirus-Tracker)
 
 ![site_pic](https://github.com/yeshwanthsomu/Coronavirus-Tracker/blob/main/RPubs2.png)
