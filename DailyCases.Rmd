@@ -93,32 +93,40 @@ topcountries <- as.character(recentdate_countries[order(-recentdate_countries$Co
 # FUNCTION FOR LOOKING AT DAILY NEW CASES OF A COUNTRY
 ######################################################################################
 
-countries <- function(Country = ct){
-
+countries <- function(Country = ct, Type = ty){
 country <- Country
+type <- Type
 
 major.summary.data_countries <- subset(major.summary.data, subset = Country.Region %in% country)
 major.summary.data_countries$Diff[2:nrow(major.summary.data_countries)] <- diff(major.summary.data_countries$Confirmed)
 major.summary.data_countries$Diff[1] <- 0
+major.summary.data_countries$DeathDiff[2:nrow(major.summary.data_countries)] <- diff(major.summary.data_countries$Death)
+major.summary.data_countries$DeathDiff[1] <- 0
 
-a <- list(
-  x = major.summary.data_countries$Date[1],
-  y = max(major.summary.data_countries$Diff),
-  text = major.summary.data_countries[(major.summary.data_countries$Date == recentdate),"Confirmed"],
-  xref = "x",
-  yref = "y",
-  showarrow=FALSE
-)
+## Type = "Confirmed" for daily new confirmed cases
+## Type = "Deaths" for daily deaths
 
-# Daily New Confirmed Cases plot
-#############################################
-plot_ly(major.summary.data_countries,
-         x=~Date, y=~Diff, type = "bar") %>%
-   layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Cases")) %>%
-   layout(title = list(text = paste("Daily New Confirmed Cases for", country, sep=" "))) %>%
-   layout(yaxis = list(range = c(0, 1.1*(max(major.summary.data_countries$Diff)))))%>%
-  config(displayModeBar = F)
+if(type == "Confirmed"){
+  # Daily Confirmed Cases plot
+  #############################################
+  plot_ly(major.summary.data_countries,
+           x=~Date, y=~Diff, type = "bar") %>%
+     layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Cases")) %>%
+     layout(title = list(text = paste("Daily Confirmed Cases for", country, sep=" "))) %>%
+     layout(yaxis = list(range = c(0, 1.1*(max(major.summary.data_countries$Diff)))))%>%
+    config(displayModeBar = F)
+} else if(type == "Deaths"){
+    # Daily Deaths plot
+  #############################################
+  plot_ly(major.summary.data_countries,
+           x=~Date, y=~DeathDiff, type = "bar", color = "red") %>%
+     layout(xaxis=list(title="Date", tickfont = list(size = 9)), yaxis=list(title="Deaths")) %>%
+     layout(title = list(text = paste("Daily Deaths for", country, sep=" "))) %>%
+     layout(yaxis = list(range = c(0, 1.1*(max(major.summary.data_countries$DeathDiff)))))%>%
+    config(displayModeBar = F)
+} 
 
+ 
 }
 
 ```
@@ -130,12 +138,12 @@ Row
 
 ### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
-countries(topcountries[1])
+countries(topcountries[1], "Confirmed")
 ```
 
 ### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
-countries(topcountries[2])
+countries(topcountries[1], "Deaths")
 ```
 
 Row
@@ -143,12 +151,12 @@ Row
 
 ### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
-countries(topcountries[3])
+countries(topcountries[2], "Confirmed")
 ```
 
-###
+### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
-countries(topcountries[4])
+countries(topcountries[2], "Deaths")
 ```
 
 Row
@@ -156,12 +164,51 @@ Row
 
 ### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
-countries(topcountries[5])
+countries(topcountries[3], "Confirmed")
 ```
 
-###
+### 
 ```{r, message=F, echo=FALSE, warning=FALSE}
-countries(topcountries[6])
+countries(topcountries[3], "Deaths")
+```
+
+Row
+-------------------------------------
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[4], "Confirmed")
+```
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[4], "Deaths")
+```
+
+Row
+-------------------------------------
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[5], "Confirmed")
+```
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[5], "Deaths")
+```
+
+Row
+-------------------------------------
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[6], "Confirmed")
+```
+
+### 
+```{r, message=F, echo=FALSE, warning=FALSE}
+countries(topcountries[6], "Deaths")
 ```
 
 
@@ -233,6 +280,7 @@ worldmeter[is.na(worldmeter)] <- 0
 
 confirmed_US <- confirmed_US[order(confirmed_US$Province_State),]
 worldmeter <- worldmeter[order(worldmeter$USAState),]
+worldmeter <- worldmeter[!(worldmeter$USAState=="Total:"),]
 
 confirmed_US <- add_column(confirmed_US, Population=worldmeter$Population, .after=1)
 confirmed_US <- add_column(confirmed_US, RecoveredRatio=worldmeter$RecoveredRatio, .after=1)
